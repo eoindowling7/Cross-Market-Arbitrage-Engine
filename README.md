@@ -20,23 +20,124 @@ In theory, if I can buy opposing outcomes across the two platforms for less than
 ## System Architecture
 
 Although many designs were tested, this was the final architecture chosen for its near perfect pairing precision and relatively high recall.
+
+![System architecture](figures/01_system_architecture_final.png)
+
 ## Market Matching Pipeline
 
 ### 1. Candidate Retrieval with BGE Embeddings
+
+The first big problem was the scale, comparing each kalshi market against every active polymarket market directly would have a N^2 time complexity which would obviously not be viable with thousands of markets on each side. To avoid this, I used BGE
+sentence embeddings as a semantic retrieval layer. This BGE method converts sentences into high-deminsional vectors to group similar topic sentences together, this method would not be accurate enough to determine exact matches however it helps to narrow the search space for more precise pair analysis.
+
+In the final run, this retrieval stage produced over 35,000 candidate pairs, all to be passed to the next classifier.
+
 ### 2. Pairwise Equivalence Classification with DeBERTa
+
+This stage was the main learned component of the system.
+
+This more complex model would be useful for distinguishing between contracts that are topically similar and contracts which represent the same proposition. This is especially useful here, as with so many contracts, there are bound to be pairs which refer to the same person and result but differ in context which would be easily missed by many systems.
+
+The final production classifier used Microsoft's DeBERTa-v3 base, giving these results when tested on a sample of 700 pairs.
+
+| Metric | Validation Result |
+|---|---:|
+| Accuracy | **89.99%** |
+| Precision | **100.00%** |
+| Recall | **75.64%** |
+| F1 Score | **86.13%** |
+| PR-AUC | **99.89%** |
+| ROC-AUC | **99.93%** |
+| Validation Loss | **0.4157** |
+
+In the final experiment, it narrowed  the 35,525 candidates down to 10,525 passes. This removed a large amount of obvious noise however there was bound to be some errors so we could not use this result directly to make trades. The high test score could not guarantee each of the ten thousand passes have exactly compatible structure or settlement conditions.
+
+![Retention by DeBERTa score decile](figures/09_retention_by_score_decile_journal.png)
+
 ### 3. Deterministic Semantic and Precision Filtering
+
+After DeBERTa, I added deterministic filter focusing structural differences that the model could have missed. This final filtering stack consisted of V7, V8 and a V8.1, allowing me to be absolutely positive that any pair which makes its way through is a complete match.
+
+The V7 acts as a broad structural safeguard. It checks details such as event identity, subject identity, competition, stage, date, structural wording patterns and known mismatch types. This stage was not particularly restrictive, focusing on removing the high confidence contradictions and allowing all plausible candidates to continue.
+The V7 reduced the 10,525 candidates to approximately 7,208.
+
+The V8 on the other hand was much stricter. This stage checked a lot of the same things as the V7 while simultaneously checking  extra details like geographical scope, metric, action, time periods and granularity. This stage also had a third outcome beyond pass or reject, an "insufficient evidence" classification, this prevented forced positive decisions if one side of the pair was not as detailed as the other.
+Of the now 7,208 candidates, 1,414 passed, 1,374 contained an explicit mismatch and 4,420 had insufficient evidence. This is where the pipeline became deliberately conservative to prevent any risk of mismatch.
+
+The final V8.1 was a precision gaurd added after manually examining the type of false positives which slipped through the previous filters. This removed mismatches such as;
+- "become PM" v "be the next PM"
+- "next to leave" v "first to leave"
+- actor-only v actor-and-programme award markets
+- misleading keyword overlap between unrelated metrics
+
+This removed a further 78 candidates leaving 1,336 of the initial 35,000+ pairs remaining.
+
+This process was deliberately biased towards precision rather than recall, as a false negative may mean simply missing the possibility of an arbitrage however a single false positive would indicate a false arbitrage opportunity, leading to exposed risk and completely eliminate the purpose of the project.
+
+![Example semantic match and mismatch cases](figures/07_match_case_studies_compact.png)
+
+I also examined how the filtering stages impacted different prediction-market domains.
+
+![Domain pipeline survival heatmap](figures/08_domain_pipeline_survival_heatmap.png)
 
 ## Settlement and Execution Filtering
 
 ### Settlement-Rule Verification
-### Directional Payoff Equivalence
+
+Another unexpected finding was that even perfect semantic equivalence is still not enough, even if two contracts describe the exact same thing they may have different rules governing how they actually resolve. For all candidates that survived semantic filtering and later displayed favourable live pricing, I retrieved the settlement rules from both Kalshi and Polymarket. This allowed me to check for differnces including settlement deadlines, cancellation provisions, fallback resolution procedures, event-completion requirements etc.
+
+During the final run this brought the 46 price-confirmed opportunities down to 26 passing watch candidates.
+
 ### Live Pricing and Execution Checks
+
+Only after  the semantic and settlement stages could we begin moving into live execution alsysis.
+This required the system to evaluate;
+- Executable prices
+- Platform fees
+- Quote timestamp skew
+- Available quantity
+- Capital lock duration
+- Return on capital
+
+It was important to take time into account, as there can be delays between the price being given and when the trade is actually executed, especially when there are multiple people in a virtual queue to do the same trade. This problem was far more prevalent during the initial single market arbitrage project, however became far less impactful here as opportunities are much more frequent.
 
 ## Paper-Trading Methodology
 
+For the final test I allowed the 26-market watchlist to be monitored for 4 hours, this is quite a short window considering the focus was to detect such rare occurrences however I was somewhat time-restricted fur to difficulties developing the pair filtration system.
+
+The main execution rules were as follows;
+
+- Minimum raw ROC: 0.25%
+- Minimum APR: 0.75%
+- Minimum net profit per contract: $0.0025
+- Maximum quote skew: 3 seconds
+- Maximum contracts per position: 500
+- Polling interval: 10 seconds
+
+The entire watchlist was recycled every 10 seconds (1 cycle), with oppurtunities being ranked primarily by annualized return on capital. Once a paper position was entered, the capital was locked until the end of the four hour run.
+
 ## Results
 
-## Key Figures
+A total of four trades were made, with three of them being identified in the very first cycle meaning the opportunities were likely open for hours.
+
+| Market | Strategy | Entry APR | Raw ROC | Capital Deployed | Locked Paper Profit |
+|---|---|---:|---:|---:|---:|
+| Ajax | Kalshi YES + Polymarket NO | **3.04%** | **2.78%** | **$40.87** | **$1.13** |
+| Zohran Mamdani | Kalshi YES + Polymarket NO | **1.30%** | **2.84%** | **$47.65** | **$1.35** |
+| Mike Derry | Kalshi YES + Polymarket NO | **0.88%** | **0.91%** | **$4.95** | **$0.05** |
+| Donald Trump Jr. | Kalshi NO + Polymarket YES | **0.77%** | **1.68%** | **$24.59** | **$0.41** |
+
+| Portfolio Metric | Result |
+|---|---:|
+| Capital Deployed | **$118.05** |
+| Locked Paper Profit | **$2.95** |
+| Raw Return on Deployed Capital | **~2.50%** |
+
+These final results were less profitable than expected, however this is likely due to the strict nature of the semantic filters, as it's likely that only a fraction of the actual opportunities were actually observed. A positive takeaway however is that despite the over 35,000 initial pairs, the system successfully autonomously identified every single false positive.
+
+![Trade-level return summary](figures/figure_D_trade_level_summary_fixed.png)
+
+## Live Opportunity Behaviour
 
 ## Limitations
 
