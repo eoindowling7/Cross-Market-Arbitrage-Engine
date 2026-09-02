@@ -1,0 +1,12 @@
+pandas
+pyarrow
+requests
+matplotlib
+scikit-learn
+numpy
+sentence-transformers>=6.0
+faiss-cpu>=1.15.0
+transformers>=4.45
+sentencepiece
+torch
+pytest
