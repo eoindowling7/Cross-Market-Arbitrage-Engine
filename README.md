@@ -178,5 +178,38 @@ Replacing the rule based filtration with a precision-first learned model that wo
 
 ## Notes
 
+### Open-Source Models
+
+This project uses the following open-source pretrained models:
+
+- ![**DeBERTa V3 Base**](https://huggingface.co/microsoft/deberta-v3-base/tree/main?utm_source=chatgpt.com) by Microsoft, used as the base model for pairwise market-equivalence classification.
+- ![**BGE Small English v1.5**](https://huggingface.co/BAAI/bge-small-en-v1.5?utm_source=chatgpt.com) by BAAI, used for high-recall semantic candidate retrieval.
+
+Both models are released under the MIT License. Please refer to their original model cards and publications for full attribution and citation information.
+
+### Requirements
+- Python 3.x
+- Project dependencies are listed in `requirements.txt`.
+- Live market data requires access to the Kalshi and Polymarket APIs.
+
+### Reproducing the Results
+- Exact results may differ because market prices, liquidity, and available contracts change continuously.
+- Large model checkpoints and market-data caches are excluded from the repository.
+- The included notebook and saved outputs document the final experimental pipeline and paper-trading run.
+
+### Paper Trading
+- All trading results shown in this project are simulated.
+- No personal capital was deployed.
+- Prediction-market access and trading permissions vary by jurisdiction.
+- Paper-trading performance should not be interpreted as guaranteed real-world profitability.
+
+### Project Scope
+- This project was developed for research and educational purposes.
+- The system prioritises semantic equivalence, settlement compatibility, and execution realism over maximising the number of detected opportunities.
+
+### License
+- This project is licensed under the MIT License.
+
+
 
 
