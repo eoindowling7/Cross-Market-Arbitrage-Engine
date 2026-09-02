@@ -161,10 +161,22 @@ Finally the annualized returns of the final positions were relatively low. The p
 
 ## Future Work
 
-If I were to continue 
+If I were to continue the project I would focus on improving the efficiency of the filtration system, perhaps splitting the different categories to be evaluated to matching systems designed specifically for the type of contract. This would help to tackle the market domain issues, with none of them Economics, Weather or Technology categories having a single candidate make it to the final stage.
 
-## Repository Structure
+A second improvement would be to replace some of the binary pass/reject settlement decisions with probabilistic basis risk estimates. Instead of requiring a pair to be effectively risk free, the engine could estimate the probability that a settlement difference becomes relevant and compare that risk against the expected return.
 
-## Setup and Usage
+Other extensions I would consider include:
 
-## Technologies Used
+- training a settlement-aware classifier directly on full contract rules
+- expanding the manually labelled equivalence dataset
+- testing precision and recall on a larger independent dataset
+- monitoring opportunities over days or weeks rather than hours
+- introducing controlled risk budgets for near-equivalent contracts
+- eventually testing small-scale live execution
+
+Replacing the rule based filtration with a precision-first learned model that works in a different way to the DeBERTa based model would be the main goal for increasing opportunity, as another precise model but with different weaknesses would be able to verify much of the same confidence in true pairs while also having different false-positive weaknesses to which allow a different angle in eliminating false pairs that made it through the first model.
+
+## Notes
+
+
+
