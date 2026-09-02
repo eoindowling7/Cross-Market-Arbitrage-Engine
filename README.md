@@ -139,9 +139,29 @@ These final results were less profitable than expected, however this is likely d
 
 ## Live Opportunity Behaviour
 
+![APR across the final 26-market watchlist](figures/13_all_26_watchlist_apr_over_time.png)
+
+The entire 26 market watchlist was monitored during the run , with only four of these ever crossing the 0.75% APR threshold. As most of these contracts described events not due to happen in the short term (such as 2028 elections), the prices were not extremely volatile during the four hour run, due to a lack of market or media activity at this early stage. A much longer run of days or weeks would allow a higher threshold to be used as real life events which relate to the contracts could cause large opportunities to appear.
+
+![APR threshold crossings and near misses](figures/figure_A_threshold_crossings_near_misses.png)
+
+Many of the events had no price change at all during the 4 hour window
+
+![APR over time with trade entries](figures/12_apr_over_time_trade_entries.png)
+
 ## Limitations
 
+The biggest limitation was that the final system may have become too conservative. I intentionally prioritised precision because of how impactful false-positive matches would've been in the system, this led me to adding the V7, V8 and V8.1 rule based filters. The V8 in particular however was extremely selective in what it let through, which surely eliminated a large portion of the potential arbitrage opportunities.
+
+The final settlement filtering also essentially halved the tradeable candidates to prevent any contract clauses from risking a loss, going from 46 to 26 opportunities.
+
+The live monitoring period also only lasted for 4 hours, so the observed opportunity set cannot be assumed to represent normal market conditions across longer periods. The capital deployed in this final test was only simulated rather than submitted to a either exchange, live capital was not deployed due to jurisdiction-dependent restrictions and compliance requirements across prediction markets as I didn't want this to impact the technical-focused aspect of the project. Despite already accounting for some of the trading latency in this project, I suspect there could easily be additional hurdles such as partial fills or simple operational error which are difficult to account for if real capital was used.
+
+Finally the annualized returns of the final positions were relatively low. The projects failed to demonstrate how this "risk-free strategy" could outperform the more traditional investments. This result was clear evidence of the trade off between protecting the system against basis risk and being able to monitor all opportunities.
+
 ## Future Work
+
+If I were to continue 
 
 ## Repository Structure
 
