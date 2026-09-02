@@ -184,8 +184,8 @@ Replacing the rule-based filtration with a precision-first learned model that wo
 
 This project uses the following open-source pretrained models:
 
-- [**DeBERTa V3 Base**](https://huggingface.co/microsoft/deberta-v3-base) by Microsoft, used as the base model for pairwise market-equivalence classification.
-- [**BGE Small English v1.5**](https://huggingface.co/BAAI/bge-small-en-v1.5) by BAAI, used for high-recall semantic candidate retrieval.
+- **[DeBERTa V3 Base]**(https://huggingface.co/microsoft/deberta-v3-base) by Microsoft, used as the base model for pairwise market-equivalence classification.
+- **[BGE Small English v1.5]**(https://huggingface.co/BAAI/bge-small-en-v1.5) by BAAI, used for high-recall semantic candidate retrieval.
 
 Both models are released under the MIT License. Please refer to their original model cards and publications for full attribution and citation information.
 
